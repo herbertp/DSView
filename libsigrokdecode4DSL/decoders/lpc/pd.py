@@ -493,8 +493,8 @@ class Decoder(srd.Decoder):
 
             # State machine
             if self.state == 'IDLE':
-                # A valid LPC cycle starts with LFRAME# being asserted (low).
-                if lframe == 0:
+                # A valid LPC cycle starts with LFRAME# going low.
+                if lframe == 0 and self.oldlframe == 1:
                     self.ss_block = self.samplenum
                     self.state = 'GET START'
                     self.lad = -1
