@@ -195,32 +195,27 @@ class Decoder(srd.Decoder):
 
     def handle_get_start(self, lframe):
         # LAD[3:0]: START field (1 clock cycle).
-
-        # The last value of LAD[3:0] before LFRAME# gets de-asserted is what
-        # the peripherals must use. However, the host can keep LFRAME# asserted
-        # multiple clocks, and we output all START fields that occur, even
-        # though the peripherals are supposed to ignore all but the last one.
         self.es_block = self.samplenum
-        self.putb([1, [fields['START'][self.oldlad], 'START', 'St', 'S']])
+        if self.oldlad in fields['START']:
+            self.putb([1, [fields['START'][self.oldlad], 'START', 'St', 'S']])
+        else:
+            self.putb([1, ['Reserved START field', 'START', 'St', 'S']])
         self.ss_block = self.samplenum
 
-
-        # LFRAME# is asserted (low). Wait until it gets de-asserted again
-        # (the host is allowed to keep it asserted multiple clocks).
-        if lframe != 1:
-            return
-
-        if (self.oldlad == 0b0000 or self.oldlad == 0b0101):
-            self.start_field = self.oldlad
+        start_field_val = self.oldlad
+        if (start_field_val == 0b0000 or start_field_val == 0b0101):
+            self.start_field = start_field_val
             self.state = 'GET CT/DR'
-        elif (self.oldlad == 0b1101 or self.oldlad == 0b1110):
-            self.start_field = self.oldlad
-            if (self.oldlad == 0b1110):
+        elif (start_field_val == 0b1101 or start_field_val == 0b1110):
+            self.start_field = start_field_val
+            if (start_field_val == 0b1110):
                 self.direction = True
             else:
                 self.direction = False
             self.state = 'GET FW IDSEL'
         else:
+            # This includes Stop/Abort (0b1111) and reserved values.
+            # After a stop/abort, we go back to idle and wait for a new frame.
             self.state = 'IDLE'
 
     def handle_get_ct_dr(self):
@@ -419,7 +414,16 @@ class Decoder(srd.Decoder):
             return
 
         # Data is driven LSN-first.
-        offset = self.cur_nibble * 4
+        nibble_swap = self.cur_nibble % 2
+        offset = ((data_nibbles - 1) - self.cur_nibble) * 4
+        if (nibble_swap):
+            offset += 4
+        else:
+            offset -= 4
+        if (offset < 0):
+            self.putb([0, ['Warning: Invalid data shift: %d' % offset]])
+            self.state = 'IDLE'
+            return
         self.dataword |= (self.oldlad << offset)
 
         # Continue if we haven't seen all DATA cycles, yet.
@@ -438,11 +442,11 @@ class Decoder(srd.Decoder):
     def handle_get_data(self):
         # LAD[3:0]: DATA field (2 clock cycles).
 
-        # Data is driven MSN-first.
+        # Data is driven LSN-first.
         if (self.cycle_count == 0):
-            self.databyte = (self.oldlad << 4)
+            self.databyte = self.oldlad
         elif (self.cycle_count == 1):
-            self.databyte |= self.oldlad
+            self.databyte |= (self.oldlad << 4)
         else:
             self.putb([0, ['Warning: Invalid cycle_count: %d' % self.cycle_count]])
             self.state = 'IDLE'
@@ -496,6 +500,10 @@ class Decoder(srd.Decoder):
 
             # TODO: Only memory read/write is currently supported/tested.
 
+            # Detect host cycle abort requests
+            if (lframe == 0) and (self.oldlframe == 0):
+                self.state = 'GET TIMEOUT'
+
             # State machine
             if self.state == 'IDLE':
                 # A valid LPC cycle starts with LFRAME# being asserted (low).
@@ -503,8 +511,6 @@ class Decoder(srd.Decoder):
                     self.ss_block = self.samplenum
                     self.state = 'GET START'
                     self.lad = -1
-                else:
-                    self.wait({0: 'f'})
             elif self.state == 'GET START':
                 self.handle_get_start(lframe)
             elif self.state == 'GET CT/DR':
