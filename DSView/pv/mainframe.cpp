@@ -249,7 +249,7 @@ void MainFrame::OnParentNativeEvent(ParentNativeEvent msg)
     sig_ParentNativeEvent((int)msg);
 }
 
-void MainFrame::OnParentNaitveWindowEvent(int msg)
+void MainFrame::OnParentNaitveWindowEvent(int /*msg*/)
 {
 
 #ifdef _WIN32
@@ -408,10 +408,6 @@ bool MainFrame::eventFilter(QObject *object, QEvent *event)
 {
     const QEvent::Type type = event->type();
     const QMouseEvent *const mouse_event = (QMouseEvent*)event;
-    int newWidth = 0;
-    int newHeight = 0;
-    int newLeft = 0;
-    int newTop = 0;
 
 #ifdef _WIN32
     if (_parentNativeWidget != NULL){
