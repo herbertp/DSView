@@ -50,7 +50,7 @@
 class EdgeSearchProgressDialog : public QProgressDialog
 {
 public:
-    EdgeSearchProgressDialog(QWidget *parent, QString &title, QString &cancelText)
+    EdgeSearchProgressDialog(QWidget *parent, const QString &title, const QString &cancelText)
         :QProgressDialog(title, cancelText, 0, 0, parent, Qt::CustomizeWindowHint)
     {
 

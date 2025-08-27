@@ -94,6 +94,7 @@ private:
 
 private:
 	QSizeF 		_text_size;
+    int         _order;
 };
 
 } // namespace view
