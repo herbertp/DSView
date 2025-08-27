@@ -414,16 +414,7 @@ class Decoder(srd.Decoder):
             return
 
         # Data is driven LSN-first.
-        nibble_swap = self.cur_nibble % 2
-        offset = ((data_nibbles - 1) - self.cur_nibble) * 4
-        if (nibble_swap):
-            offset += 4
-        else:
-            offset -= 4
-        if (offset < 0):
-            self.putb([0, ['Warning: Invalid data shift: %d' % offset]])
-            self.state = 'IDLE'
-            return
+        offset = self.cur_nibble * 4
         self.dataword |= (self.oldlad << offset)
 
         # Continue if we haven't seen all DATA cycles, yet.
@@ -442,11 +433,11 @@ class Decoder(srd.Decoder):
     def handle_get_data(self):
         # LAD[3:0]: DATA field (2 clock cycles).
 
-        # Data is driven LSN-first.
+        # Data is driven MSN-first.
         if (self.cycle_count == 0):
-            self.databyte = self.oldlad
+            self.databyte = (self.oldlad << 4)
         elif (self.cycle_count == 1):
-            self.databyte |= (self.oldlad << 4)
+            self.databyte |= self.oldlad
         else:
             self.putb([0, ['Warning: Invalid cycle_count: %d' % self.cycle_count]])
             self.state = 'IDLE'
@@ -499,10 +490,6 @@ class Decoder(srd.Decoder):
             # self.putb([0, ['LAD: %s' % lad_bits]])
 
             # TODO: Only memory read/write is currently supported/tested.
-
-            # Detect host cycle abort requests
-            if (lframe == 0) and (self.oldlframe == 0):
-                self.state = 'GET TIMEOUT'
 
             # State machine
             if self.state == 'IDLE':
