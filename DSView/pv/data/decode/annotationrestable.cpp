@@ -292,7 +292,7 @@ const char* AnnotationResTable::format_numberic(const char *hex_str, int fmt)
 				return hex_str;
 			  }
 
-			  strncpy(all_wr, sub_str, sublen);
+			  snprintf(all_wr, sublen + 1, "%s", sub_str);
 			  all_wr += sublen;
 			  sub_wr = sub_buf; //reset write buffer
 		  }
@@ -320,7 +320,7 @@ const char* AnnotationResTable::format_numberic(const char *hex_str, int fmt)
 			return hex_str;
 		 }
 
-		 strncpy(all_wr, sub_str, sublen);
+		 snprintf(all_wr, sublen + 1, "%s", sub_str);
 		 all_wr += sublen;		
 	 }
 
@@ -396,4 +396,3 @@ void AnnotationResTable::decimalToBinString(unsigned long long num, int bitSize,
 		wr--;
 	}
 }
- 

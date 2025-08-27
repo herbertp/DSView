@@ -254,8 +254,10 @@ SRD_API int srd_init(const char *path)
 		}
 	}
 
+#if PY_VERSION_HEX < 0x03090000
 	/* Initialize the Python GIL (this also happens to acquire it). */
 	PyEval_InitThreads();
+#endif
 
 	/* Release the GIL (ignore return value, we don't need it here). */
 	PyEval_SaveThread();
@@ -395,7 +397,11 @@ SRD_API GSList *srd_searchpaths_get(void)
 //set python home directory
 SRD_API void srd_set_python_home(const wchar_t *path)
 {
+#if PY_VERSION_HEX < 0x030B0000
 	Py_SetPythonHome((wchar_t*)path);
+#else
+    (void)path;
+#endif
 }
 
 /** @} */

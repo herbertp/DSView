@@ -4,9 +4,9 @@
  * Copyright (C) 2013 Bert Vermeulen <bert@biot.com>
  * Copyright (C) 2013 DreamSourceLab <dreamsourcelab@dreamsourcelab.com>
  *
- * This program is free software: you can redistribute it and/or modify
+ * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -204,10 +204,11 @@ static GSList *scan(GSList *options)
     num = 0;
     is_speed_not_match = 0;
 
-    if (options != NULL)
+    if (options != NULL) {
         sr_info("Scan DSCope device with options.");
-    else 
+    } else {
         sr_info("Scan DSCope device...");
+    }
 
 	conn = NULL;
 	for (l = options; l; l = l->next) {
@@ -222,8 +223,9 @@ static GSList *scan(GSList *options)
         sr_info("Find usb device with connect config.");
         conn_devices = sr_usb_find(drvc->sr_ctx->libusb_ctx, conn);
     }
-	else
+	else {
 		conn_devices = NULL;
+    }
 
     /* Find all DSCope compatible devices and upload firmware to them. */
 	devices = NULL;
@@ -425,7 +427,7 @@ static uint64_t dso_preoff(const struct sr_channel* ch)
 static uint64_t dso_offset(const struct sr_dev_inst *sdi, const struct sr_channel* ch)
 {
     uint64_t pwm_off = 0;
-    int offset_coarse, offset_fine;
+    int offset_coarse = 0, offset_fine = 0;
     int trans_coarse, trans_fine;
     struct DSL_context *devc = sdi->priv;
     const double offset_mid = (1 << (ch->bits - 1));
@@ -1487,7 +1489,7 @@ static int config_set(int id, GVariant *data, struct sr_dev_inst *sdi,
             sr_dbg("%s: setting ENABLE of channel %d to %d",
                 __func__, ch->index, ch->enabled);
         else
-            sr_dbg("%s: setting ENABLE of channel %d to %d failed",
+            sr_dbg("%s: setting ENABLE of channel %d to %d",
                 __func__, ch->index, ch->enabled);
     } else if (id == SR_CONF_PROBE_OFFSET) {
         ch->offset = g_variant_get_uint16(data);
@@ -1849,7 +1851,7 @@ static int dev_open(struct sr_dev_inst *sdi)
     gboolean fpga_done;
     int ret;
     GSList *l;
-    gboolean zeroed;
+    gboolean zeroed = FALSE;
     struct DSL_context *devc = sdi->priv;
 
     if ((ret = dsl_dev_open(di, sdi, &fpga_done)) == SR_OK) {
@@ -2075,7 +2077,7 @@ static int dev_acquisition_start(struct sr_dev_inst *sdi, void *cb_data)
                 sr_err("%s: Set VDIV of channel %d command failed!", __func__, probe->index);
             ret = dsl_wr_dso(sdi, dso_cmd_gen(sdi, probe, SR_CONF_PROBE_OFFSET));
             if (ret != SR_OK)
-                sr_err("%s: Set OFFSET of channel %d command failed!", __func__, probe->index);
+                sr_err("%s: Set OFFSET of channel %d to %d failed!", __func__, probe->index);
             probe->hw_offset = probe->offset;
         }
     }

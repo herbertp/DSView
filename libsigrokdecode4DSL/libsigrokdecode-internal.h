@@ -25,6 +25,7 @@
 /* Use the stable ABI subset as per PEP 384. */
 #define Py_LIMITED_API 0x03020000
 
+#undef _POSIX_C_SOURCE
 #include <Python.h> /* First, so we avoid a _POSIX_C_SOURCE warning. */
 #include "libsigrokdecode.h"
 #include <structmember.h>

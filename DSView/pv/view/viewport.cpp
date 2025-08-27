@@ -656,7 +656,6 @@ void Viewport::mousePressEvent(QMouseEvent *event)
         else if (_view.session().get_device()->get_work_mode() == DSO) {
             if (_hover_hit) {
                 const int64_t index = _view.pixel2index(event->pos().x());
-                auto &cursor_list = _view.get_cursorList();
                 _view.add_cursor(index);
                 _view.show_cursors(true);
             }
@@ -1084,6 +1083,8 @@ void Viewport::onLogicMouseRelease(QMouseEvent *event)
             set_action(NO_ACTION);
             break;
         }
+    default:
+        break;
     } 
 }
 
@@ -1176,10 +1177,12 @@ void Viewport::onDsoMouseRelease(QMouseEvent *event)
             }
             break;
         }
+    default:
+        break;
     }
 }
 
-void Viewport::onAnalogMouseRelease(QMouseEvent *event)
+void Viewport::onAnalogMouseRelease(QMouseEvent */*event*/)
 {
 
 }
@@ -1289,7 +1292,6 @@ void Viewport::mouseDoubleClickEvent(QMouseEvent *event)
                 index = _view.pixel2index(curX);
             }
 
-            auto &cursor_list = _view.get_cursorList();
             _view.add_cursor(index);
             _view.show_cursors(true);
         }
@@ -1319,7 +1321,6 @@ void Viewport::mouseDoubleClickEvent(QMouseEvent *event)
             uint64_t index;
             const double curX = event->pos().x();
             index = _view.pixel2index(curX);
-            auto &cursor_list = _view.get_cursorList();
             _view.add_cursor(index);
             _view.show_cursors(true);
         }
@@ -1556,7 +1557,7 @@ void Viewport::set_receive_len(quint64 length)
     update(UpdateEventType::UPDATE_EV_GENERIC);
 }
 
-void Viewport::update(int event)
+void Viewport::update(int /*event*/)
 {
     QWidget::update();
 }

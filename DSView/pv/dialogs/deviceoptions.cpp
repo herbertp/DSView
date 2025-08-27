@@ -21,7 +21,7 @@
  */
 
 #include "deviceoptions.h"
- 
+
 #include <QListWidget>
 #include <QGuiApplication>
 #include <QScreen>
@@ -48,7 +48,7 @@ ChannelLabel::ChannelLabel(IChannelCheck *check, QWidget *parent, int chanIndex)
 : QWidget(parent)
 {
     _checked = check;
-    _index = chanIndex;  
+    _index = chanIndex;
 
     QGridLayout *lay = new QGridLayout();
     lay->setContentsMargins(0,0,0,0);
@@ -81,7 +81,7 @@ void ChannelLabel::on_checked()
 }
 
 //--------------------------DeviceOptions
- 
+
 namespace pv {
 namespace dialogs {
 
@@ -89,8 +89,8 @@ DeviceOptions::DeviceOptions(QWidget *parent) :
     DSDialog(parent)
 {
     _scroll_panel = NULL;
-    _container_panel = NULL;   
-    _scroll = NULL; 
+    _container_panel = NULL;
+    _scroll = NULL;
     _width = 0;
     _groupHeight1 = 0;
     _groupHeight2 = 0;
@@ -106,7 +106,7 @@ DeviceOptions::DeviceOptions(QWidget *parent) :
     this->SetTitleSpace(0);
     this->layout()->setSpacing(0);
     this->layout()->setDirection(QBoxLayout::TopToBottom);
-    this->layout()->setAlignment(Qt::AlignTop); 
+    this->layout()->setAlignment(Qt::AlignTop);
 
     // scroll panel
     _scroll_panel  = new QWidget();
@@ -118,7 +118,7 @@ DeviceOptions::DeviceOptions(QWidget *parent) :
     this->layout()->addWidget(_scroll_panel);
 
     // container
-    _container_panel = new QWidget();      
+    _container_panel = new QWidget();
     _container_lay = new QVBoxLayout();
     _container_lay->setDirection(QBoxLayout::TopToBottom);
     _container_lay->setAlignment(Qt::AlignTop);
@@ -129,7 +129,7 @@ DeviceOptions::DeviceOptions(QWidget *parent) :
 
     QFont font = this->font();
     font.setPointSizeF(AppConfig::Instance().appOptions.fontSize);
-   
+
     // mode group box
     QGroupBox *props_box = new QGroupBox(L_S(STR_PAGE_DLG, S_ID(IDS_DLG_MODE), "Mode"), this);
     props_box->setFont(font);
@@ -155,30 +155,30 @@ DeviceOptions::DeviceOptions(QWidget *parent) :
 
     //button
     auto button_box = new QDialogButtonBox(QDialogButtonBox::Ok, Qt::Horizontal, this);
-	this->layout()->addWidget(button_box); 
-   
+	this->layout()->addWidget(button_box);
+
     _device_agent->get_config_int16(SR_CONF_OPERATION_MODE, _opt_mode);
 
     if (_device_agent->is_demo())
         _demo_operation_mode = _device_agent->get_demo_operation_mode();
 
     try_resize_scroll();
-  
+
     connect(&_mode_check_timer, SIGNAL(timeout()), this, SLOT(mode_check_timeout()));
     connect(button_box, SIGNAL(accepted()), this, SLOT(accept()));
 
     _mode_check_timer.setInterval(100);
-    _mode_check_timer.start();  
+    _mode_check_timer.start();
 }
 
 DeviceOptions::~DeviceOptions()
-{   
+{
 }
 
 void DeviceOptions::ChannelChecked(int index, QObject *object)
 {
     (void)index;
-    
+
     QCheckBox* sc = dynamic_cast<QCheckBox*>(object);
     channel_checkbox_clicked(sc);
 }
@@ -223,11 +223,11 @@ void DeviceOptions::accept()
             it++;
         }
 
-        QDialog::accept();        
+        QDialog::accept();
     }
-    else { 
+    else {
         QString strMsg(L_S(STR_PAGE_MSG, S_ID(IDS_MSG_ALL_CHANNEL_DISABLE), "All channel disabled! Please enable at least one channel."));
-        MsgBox::Show(strMsg);        
+        MsgBox::Show(strMsg);
     }
 }
 
@@ -249,8 +249,8 @@ QLayout * DeviceOptions::get_property_form(QWidget * parent)
 
     int i = 0;
     for(auto p : properties)
-	{ 
-        const QString label = p->labeled_widget() ? QString() : p->label();       
+	{
+        const QString label = p->labeled_widget() ? QString() : p->label();
         QString lable_text = "";
 
         if (label != ""){
@@ -262,7 +262,7 @@ QLayout * DeviceOptions::get_property_form(QWidget * parent)
         QLabel *lb = new QLabel(lable_text, parent);
         lb->setFont(font);
         layout->addWidget(lb, i, 0);
-        
+
         if (label ==  QString("Operation Mode")){
             QWidget *wid = p->get_widget(parent, true);
             wid->setFont(font);
@@ -277,9 +277,9 @@ QLayout * DeviceOptions::get_property_form(QWidget * parent)
         i++;
 	}
 
-    _groupHeight1 = parent->sizeHint().height() + 30; 
- 
-    parent->setFixedHeight(_groupHeight1); 
+    _groupHeight1 = parent->sizeHint().height() + 30;
+
+    parent->setFixedHeight(_groupHeight1);
 
     return layout;
 }
@@ -295,12 +295,12 @@ void DeviceOptions::logic_probes(QVBoxLayout &layout)
     int vld_ch_num = 0;
     int cur_ch_num = 0;
     int contentHeight = 0;
- 
+
     _probes_checkBox_list.clear();
 
     QFont font = this->font();
     font.setPointSizeF(AppConfig::Instance().appOptions.fontSize);
-  
+
     //channel count checked
     if (_device_agent->get_work_mode()== LOGIC) {
         GVariant * gvar_opts = _device_agent->get_config_list(NULL, SR_CONF_CHANNEL_MODE);
@@ -324,14 +324,14 @@ void DeviceOptions::logic_probes(QVBoxLayout &layout)
                 mode_index.key = mode_button;
                 mode_index.value = plist->id;
                 _channel_mode_indexs.push_back(mode_index);
-                
-                layout.addWidget(mode_button); 
+
+                layout.addWidget(mode_button);
                 contentHeight += mode_button->sizeHint().height();  //radio button height
-                
+
                 connect(mode_button, SIGNAL(pressed()), this, SLOT(channel_check()));
- 
+
                 if (plist->id == ch_mode)
-                    mode_button->setChecked(true); 
+                    mode_button->setChecked(true);
 
                 plist++;
             }
@@ -354,7 +354,7 @@ void DeviceOptions::logic_probes(QVBoxLayout &layout)
 
     for (const GSList *l = _device_agent->get_channels(); l; l = l->next) {
 		sr_channel *const probe = (sr_channel*)l->data;
-		 
+
         if (probe->enabled)
             cur_ch_num++;
 
@@ -370,7 +370,7 @@ void DeviceOptions::logic_probes(QVBoxLayout &layout)
          if (channel_column == 8){
             channel_column = 0;
             channel_row++;
-            
+
             if (l->next != NULL){
                 row2++;
             }
@@ -384,7 +384,7 @@ void DeviceOptions::logic_probes(QVBoxLayout &layout)
     space->setFixedHeight(10);
     layout.addWidget(space);
     contentHeight += 10;
- 
+
     // buttons
     QHBoxLayout *line_lay = new QHBoxLayout();
     layout.addLayout(line_lay);
@@ -401,7 +401,7 @@ void DeviceOptions::logic_probes(QVBoxLayout &layout)
     enable_all_probes->setMaximumWidth(bt_width);
     disable_all_probes->setMaximumWidth(bt_width);
 
-    this->update_font(); 
+    this->update_font();
 
     contentHeight += enable_all_probes->sizeHint().height();
     contentHeight += channel_line_height * row2 + 50;
@@ -420,18 +420,18 @@ void DeviceOptions::logic_probes(QVBoxLayout &layout)
     _groupHeight2 += 5;
 #endif
 
-    _dynamic_panel->setFixedHeight(_groupHeight2); 
+    _dynamic_panel->setFixedHeight(_groupHeight2);
 }
 
 void DeviceOptions::set_all_probes(bool set)
-{ 
+{
     for (auto box : _probes_checkBox_list) {
         box->setCheckState(set ? Qt::Checked : Qt::Unchecked);
     }
 }
 
 void DeviceOptions::enable_max_probes() {
-    int cur_ch_num = 0; 
+    int cur_ch_num = 0;
     for (auto box : _probes_checkBox_list) {
         if (box->isChecked())
             cur_ch_num++;
@@ -447,13 +447,13 @@ void DeviceOptions::enable_max_probes() {
         if (box->isChecked() == false) {
             box->setChecked(true);
             cur_ch_num++;
-        } 
+        }
     }
 }
 
 void DeviceOptions::enable_all_probes()
-{   
-    bool stream_mode; 
+{
+    bool stream_mode;
 
     if (_device_agent->get_config_bool(SR_CONF_STREAM, stream_mode)) {
         if (stream_mode) {
@@ -475,13 +475,13 @@ void DeviceOptions::zero_adj()
     using namespace Qt;
     QDialog::accept();
 
-    QString strMsg(L_S(STR_PAGE_MSG, S_ID(IDS_MSG_AUTO_CALIB_START), 
+    QString strMsg(L_S(STR_PAGE_MSG, S_ID(IDS_MSG_AUTO_CALIB_START),
                                    "Auto Calibration program will be started. Don't connect any probes. \nIt can take a while!"));
     bool bRet = MsgBox::Confirm(strMsg);
 
     if (bRet) {
         _device_agent->set_config_bool(SR_CONF_ZERO, true);
-    } 
+    }
     else {
         _device_agent->set_config_bool(SR_CONF_ZERO, false);
     }
@@ -501,25 +501,23 @@ void DeviceOptions::mode_check_timeout()
 
     if (_device_agent->is_hardware())
     {
-        bool test;
         int mode;
 
         if (_device_agent->get_config_int16(SR_CONF_OPERATION_MODE, mode)) {
-            if (mode != _opt_mode) { 
-                _opt_mode = mode; 
+            if (mode != _opt_mode) {
+                _opt_mode = mode;
                 build_dynamic_panel();
                 try_resize_scroll();
             }
         }
 
-        if (_device_agent->get_config_bool(SR_CONF_TEST, test)) {
-            if (test) { 
-                for (auto box : _probes_checkBox_list) {
-                    box->setCheckState(Qt::Checked);
-                    box->setDisabled(true);
-                }
+        bool test = false;
+        if (_device_agent->get_config_bool(SR_CONF_TEST, test) && test) {
+            for (auto box : _probes_checkBox_list) {
+                box->setCheckState(Qt::Checked);
+                box->setDisabled(true);
             }
-        } 
+        }
     }
     else if (_device_agent->is_demo())
     {
@@ -529,7 +527,7 @@ void DeviceOptions::mode_check_timeout()
             build_dynamic_panel();
             try_resize_scroll();
         }
-    }    
+    }
 }
 
 void DeviceOptions::channel_check()
@@ -547,7 +545,7 @@ void DeviceOptions::channel_check()
     }
     assert(mode_index >= 0);
     _device_agent->set_config_int16(SR_CONF_CHANNEL_MODE, mode_index);
-  
+
     build_dynamic_panel();
     try_resize_scroll();
 }
@@ -555,18 +553,18 @@ void DeviceOptions::channel_check()
 void DeviceOptions::analog_channel_check()
 {
     QCheckBox* sc=dynamic_cast<QCheckBox*>(sender());
-    if(sc != NULL) 
+    if(sc != NULL)
     {
         for (const GSList *l = _device_agent->get_channels(); l; l = l->next) {
             sr_channel *const probe = (sr_channel*)l->data;
-            
+
             if (sc->property("index").toInt() == probe->index){
                _device_agent->set_config_bool(SR_CONF_PROBE_MAP_DEFAULT, sc->isChecked(), probe);
             }
         }
     }
 
-    _lst_probe_enabled_status.clear();    
+    _lst_probe_enabled_status.clear();
     for (auto ck : _probes_checkBox_list){
         _lst_probe_enabled_status.push_back(ck->isChecked());
     }
@@ -594,7 +592,7 @@ void DeviceOptions::channel_checkbox_clicked(QCheckBox *sc)
         if (!stream_mode)
             return;
 
-        int cur_ch_num = 0; 
+        int cur_ch_num = 0;
         for (auto box : _probes_checkBox_list) {
             if (box->isChecked())
                 cur_ch_num++;
@@ -615,12 +613,10 @@ void DeviceOptions::channel_checkbox_clicked(QCheckBox *sc)
     else if (_device_agent->get_work_mode() == ANALOG) {
         if (sc != NULL) {
             QGridLayout *const layout = (QGridLayout *)sc->property("Layout").value<void *>();
-            int i = layout->count();
-
             int ck_index = -1;
             int i_dex = 0;
             bool map_default = false;
-            
+
             for(auto ck : _probes_checkBox_list){
                 if (ck == sc){
                     ck_index = i_dex;
@@ -635,7 +631,7 @@ void DeviceOptions::channel_checkbox_clicked(QCheckBox *sc)
                                 map_default, _dso_channel_list[ck_index], NULL);
             }
 
-            while(i--)
+            for (int i = layout->count() - 1; i >= 0; i--)
             {
                 QWidget* w = layout->itemAt(i)->widget();
 
@@ -644,7 +640,7 @@ void DeviceOptions::channel_checkbox_clicked(QCheckBox *sc)
                     map_ckbox->isChecked();
                 }
 
-                if (w->property("Enable").isNull()) {                    
+                if (w->property("Enable").isNull()) {
 
                     if (map_default && w->objectName() == "map-row"){
                         w->setEnabled(false);
@@ -656,12 +652,12 @@ void DeviceOptions::channel_checkbox_clicked(QCheckBox *sc)
             }
         }
     }
-} 
+}
 
 void DeviceOptions::analog_probes(QGridLayout &layout)
 {
     using namespace Qt;
- 
+
     _probes_checkBox_list.clear();
     _probe_options_binding_list.clear();
     _dso_channel_list.clear();
@@ -674,7 +670,7 @@ void DeviceOptions::analog_probes(QGridLayout &layout)
     font.setPointSizeF(AppConfig::Instance().appOptions.fontSize);
 
     int ch_dex = 0;
-    
+
     for (const GSList *l = _device_agent->get_channels(); l; l = l->next) {
         sr_channel *const probe = (sr_channel*)l->data;
         assert(probe);
@@ -683,10 +679,10 @@ void DeviceOptions::analog_probes(QGridLayout &layout)
 
         QWidget *probe_widget = new QWidget(tabWidget);
         QGridLayout *probe_layout = new QGridLayout(probe_widget);
-        probe_widget->setLayout(probe_layout); 
+        probe_widget->setLayout(probe_layout);
 
         bool ch_enabled = probe->enabled;
-        if (ch_dex < _lst_probe_enabled_status.size()){
+        if ((size_t)ch_dex < _lst_probe_enabled_status.size()){
             ch_enabled = _lst_probe_enabled_status[ch_dex];
         }
 
@@ -705,11 +701,11 @@ void DeviceOptions::analog_probes(QGridLayout &layout)
         en_label->setProperty("Enable", true);
         probe_layout->addWidget(en_label, 0, 0, 1, 1);
         probe_layout->addWidget(probe_checkBox, 0, 1, 1, 3);
-        
+
         auto *probe_options_binding = new pv::prop::binding::ProbeOptions(probe);
         const auto &properties = probe_options_binding->properties();
         int i = 1;
-        
+
         for(auto p : properties)
         {
             const QString label = p->labeled_widget() ? QString() : p->label();
@@ -754,7 +750,7 @@ void DeviceOptions::analog_probes(QGridLayout &layout)
 
     this->update_font();
     _groupHeight2 = tabWidget->sizeHint().height() + 50;
-    _dynamic_panel->setFixedHeight(_groupHeight2); 
+    _dynamic_panel->setFixedHeight(_groupHeight2);
 
     connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(on_anlog_tab_changed(int)));
     tabWidget->setCurrentIndex(_cur_analog_tag_index);
@@ -766,7 +762,7 @@ void DeviceOptions::on_anlog_tab_changed(int index)
 }
 
 QString DeviceOptions::dynamic_widget(QLayout *lay)
- { 
+ {
     int mode = _device_agent->get_work_mode();
 
     if (mode == LOGIC) {
@@ -775,10 +771,10 @@ QString DeviceOptions::dynamic_widget(QLayout *lay)
         logic_probes(*grid);
         //tr
         return L_S(STR_PAGE_DLG, S_ID(IDS_DLG_CHANNEL), "Channel");
-    } 
+    }
     else if (mode == DSO) {
         bool have_zero;
-      
+
         if (_device_agent->get_config_bool(SR_CONF_HAVE_ZERO, have_zero)) {
             QGridLayout *grid = dynamic_cast<QGridLayout*>(lay);
             assert(grid);
@@ -788,7 +784,7 @@ QString DeviceOptions::dynamic_widget(QLayout *lay)
 
             if (have_zero) {
                 auto config_button = new QPushButton(L_S(STR_PAGE_DLG, S_ID(IDS_DLG_AUTO_CALIBRATION), "Auto Calibration"), this);
-                config_button->setFont(font); 
+                config_button->setFont(font);
                 grid->addWidget(config_button, 0, 0, 1, 1);
                 connect(config_button, SIGNAL(clicked()), this, SLOT(zero_adj()));
 
@@ -801,13 +797,13 @@ QString DeviceOptions::dynamic_widget(QLayout *lay)
                 cali_button->setFixedHeight(35);
 
                 _groupHeight2 = 135;
-                _dynamic_panel->setFixedHeight(_groupHeight2); 
+                _dynamic_panel->setFixedHeight(_groupHeight2);
 
                 //tr
                 return L_S(STR_PAGE_DLG, S_ID(IDS_DLG_CALIBRATION), "Calibration");
             }
         }
-    } 
+    }
     else if (mode == ANALOG) {
         QGridLayout *grid = dynamic_cast<QGridLayout*>(lay);
         assert(grid);
@@ -831,7 +827,7 @@ void DeviceOptions::build_dynamic_panel()
     font.setPointSizeF(AppConfig::Instance().appOptions.fontSize);
 
     if (_dynamic_panel == NULL)
-    {  
+    {
         _dynamic_panel = new QGroupBox("group", _dynamic_panel);
         _dynamic_panel->setFont(font);
         _container_lay->addWidget(_dynamic_panel);
@@ -841,13 +837,13 @@ void DeviceOptions::build_dynamic_panel()
         else
             _dynamic_panel->setLayout(new QGridLayout());
     }
- 
+
     QString title = dynamic_widget(_dynamic_panel->layout());
     QGroupBox *box = dynamic_cast<QGroupBox*>(_dynamic_panel);
     box->setFont(font);
     box->setTitle(title);
 
-    if (title == ""){ 
+    if (title == ""){
         box->setVisible(false);
     }
 
@@ -878,14 +874,14 @@ void DeviceOptions::try_resize_scroll()
 #ifdef _WIN32
     QFont font = this->font();
     font.setPointSizeF(AppConfig::Instance().appOptions.fontSize);
-    QFontMetrics fm(font); 
+    QFontMetrics fm(font);
 
     auto labels = this->findChildren<QLabel*>();
     int max_label_width = 0;
     for(auto o : labels)
-    { 
+    {
         QRect rc = fm.boundingRect(o->text());
-        QSize size(rc.width() + 15, rc.height());         
+        QSize size(rc.width() + 15, rc.height());
         o->setFixedSize(size);
 
         if (size.width() > max_label_width){
@@ -930,14 +926,14 @@ void DeviceOptions::try_resize_scroll()
         _scroll->setFixedSize(sclw, srcHeight - exth);
     }
     else
-    { 
+    {
         this->setFixedSize(w + 12, dlgHeight);
         _scroll_panel->setFixedSize(w, contentHeight);
         _scroll->setFixedSize(sclw, contentHeight);
     }
 }
 
-void DeviceOptions::keyPressEvent(QKeyEvent *event) 
+void DeviceOptions::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Escape) {
         event->ignore();

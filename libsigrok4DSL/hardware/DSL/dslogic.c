@@ -287,10 +287,11 @@ static GSList *scan(GSList *options)
     num = 0;
     is_speed_not_match = 0;
  
-    if (options != NULL)
+    if (options != NULL) {
         sr_info("Scan DSLogic device with options.");
-    else 
+    } else {
         sr_info("Scan DSLogic device...");
+    }
 
 	conn = NULL;
 	for (l = options; l; l = l->next) {
@@ -306,8 +307,9 @@ static GSList *scan(GSList *options)
         sr_info("Find usb device with connect config.");
         conn_devices = sr_usb_find(drvc->sr_ctx->libusb_ctx, conn);
     }
-	else
+    else {
 		conn_devices = NULL;
+    }
 
     /* Find all DSLogic compatible devices and upload firmware to them. */
 	devices = NULL;
@@ -369,7 +371,8 @@ static GSList *scan(GSList *options)
 		}
 
 		/* Skip if the device was not found. */
-		if (prof == NULL){ 
+		if (prof == NULL)
+        {
               isProduct = 0;
 
                //Mybe is a dscope device.

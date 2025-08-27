@@ -99,7 +99,7 @@ void dslDial::paint(QPainter &p, QRectF dialRect, QColor dialColor, const QPoint
         displayIndex++;
     }
 
-    assert(displayIndex < _unit.count());
+    assert(displayIndex < (uint64_t)_unit.count());
    
     pText = QString::number(displayValue) + _unit[displayIndex] + "/div";
 
